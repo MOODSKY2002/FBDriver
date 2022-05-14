@@ -1,4 +1,5 @@
 此FB代码需要FB1.09版本才能正常编译!!!!
+FB研究QQ群324785043
 
 This FB code requires FB1 09 version can be compiled normally!!!!
 
