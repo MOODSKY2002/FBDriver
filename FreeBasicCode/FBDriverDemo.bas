@@ -1,9 +1,9 @@
 #include once "inc\FBDriverMod.bi"
-
-'Çý¶¯Èë¿Úº¯Êýµ¼³ö drive entry function export
+'FBç ”ç©¶QQç¾¤324785043
+'é©±åŠ¨å…¥å£å‡½æ•°å¯¼å‡º drive entry function export
 declare function DriverEntry stdcall alias "DriverEntry" (byval pDriverObject as PDRIVER_OBJECT, byval pRegistryPath as PUNICODE_STRING) as NTSTATUS
 
-'Çý¶¯Èë¿Úº¯Êý drive entry function
+'é©±åŠ¨å…¥å£å‡½æ•° drive entry function
 function DriverEntry(byval pDriverObject as PDRIVER_OBJECT,byval pRegistryPath as PUNICODE_STRING) as NTSTATUS 
    dim Status as NTSTATUS = STATUS_SUCCESS
    dim as UNICODE_STRING DEVICE_NAME,LINK_NAME,EVENT_NAME
@@ -11,7 +11,7 @@ function DriverEntry(byval pDriverObject as PDRIVER_OBJECT,byval pRegistryPath a
 
    DbgPrint(@!"%ws DriverEntry Start \r\n",My_DRIVE_NAME)
 
-   '³õÊ¼»¯
+   'åˆå§‹åŒ–
    for i = 0 to IRP_MJ_MAXIMUM_FUNCTION - 1
       pDriverObject->MajorFunction(i) = @FBDriver_UnsupportedFunction
    next
@@ -29,7 +29,7 @@ function DriverEntry(byval pDriverObject as PDRIVER_OBJECT,byval pRegistryPath a
    end with
    
 
-   '´´½¨Éè±¸ Create device
+   'åˆ›å»ºè®¾å¤‡ Create device
 	dim pDevObj as PDEVICE_OBJECT   
    RtlInitUnicodeString(@DEVICE_NAME, My_DEVICE_NAME)
    Status = IoCreateDevice(pDriverObject,sizeof(DEVICE_EXTENSION),@DEVICE_NAME,FILE_DEVICE_UNKNOWN,FILE_DEVICE_SECURE_OPEN,FALSE,@pDevObj)
@@ -41,11 +41,11 @@ function DriverEntry(byval pDriverObject as PDRIVER_OBJECT,byval pRegistryPath a
    END IF   
    
 
-	'Éè±¸Ö¸Õë·ÅÈëÈ«¾Ö±äÁ¿ Put the device pointer into the global variable
+	'è®¾å¤‡æŒ‡é’ˆæ”¾å…¥å…¨å±€å˜é‡ Put the device pointer into the global variable
 	g_pDeviceObject = pDevObj
    
    
-   '´´½¨ÊÂ¼þ Create event
+   'åˆ›å»ºäº‹ä»¶ Create event
    dim pDevExt as PDEVICE_EXTENSION 
    RtlInitUnicodeString(@EVENT_NAME, My_EVENT_NAME)
    pDevExt = pDevObj->DeviceExtension
@@ -53,7 +53,7 @@ function DriverEntry(byval pDriverObject as PDRIVER_OBJECT,byval pRegistryPath a
    KeClearEvent(pDevExt->ProcessEvent)
 
    
-   '´´½¨·ûºÅÁ´½Ó²¢¹ØÁªÉè±¸ Create symbolic links and associate devices
+   'åˆ›å»ºç¬¦å·é“¾æŽ¥å¹¶å…³è”è®¾å¤‡ Create symbolic links and associate devices
    RtlInitUnicodeString(@LINK_NAME, My_LINK_NAME)
 
 	Status = IoCreateSymbolicLink(@LINK_NAME,@DEVICE_NAME)
@@ -64,12 +64,12 @@ function DriverEntry(byval pDriverObject as PDRIVER_OBJECT,byval pRegistryPath a
    end if
 
 
-   'ÈÆ¹ýPsSetCreateProcessNotifyRoutineEx¿ÓÎ»ÏÞÖÆ Bypass pssetcreateprocessnotifyroutineex pit limit
+   'ç»•è¿‡PsSetCreateProcessNotifyRoutineExå‘ä½é™åˆ¶ Bypass pssetcreateprocessnotifyroutineex pit limit
    dim pLdrData as PKLDR_DATA_TABLE_ENTRY 
    pLdrData = pDriverObject->DriverSection
    pLdrData->Flags or = &H20 
    
-   '×¢²á½ø³Ì¼à¿Ø»Øµ÷ Register process monitoring callback
+   'æ³¨å†Œè¿›ç¨‹ç›‘æŽ§å›žè°ƒ Register process monitoring callback
    Status = PsSetCreateProcessNotifyRoutineEx(@CreateProcessNotifyRoutineEx, FALSE)
    if Status <> STATUS_SUCCESS then 
       select case Status
@@ -98,27 +98,21 @@ end function
 Private sub FBDriver_Unload(byval DriverObject as PDRIVER_OBJECT)
    DbgPrint(@!"%ws FBDriver_Unload \r\n",My_DRIVE_NAME)
 
-   '¹Ø±ÕÊÂ¼þClose event
+   'å…³é—­äº‹ä»¶Close event
    dim pDevExt as PDEVICE_EXTENSION 
    pDevExt = g_pDeviceObject->DeviceExtension
    KeClearEvent(pDevExt->ProcessEvent)
    ZwClose pDevExt->ProcessEvent 
 
-'   '´´½¨ÊÂ¼þ Create event
-'   dim pDevExt as PDEVICE_EXTENSION 
-'   RtlInitUnicodeString(@EVENT_NAME, My_EVENT_NAME)
-'   pDevExt = pDevObj->DeviceExtension
-'	pDevExt->ProcessEvent = IoCreateNotificationEvent(@EVENT_NAME,@pDevExt->hProcessHandle)
-'   KeClearEvent(pDevExt->ProcessEvent)
-   'È¡Ïû»Øµ÷ Cancel callback
+   'å–æ¶ˆå›žè°ƒ Cancel callback
    PsSetCreateProcessNotifyRoutineEx(@CreateProcessNotifyRoutineEx, TRUE)
 
-   'É¾³ýÉè±¸Á¬½Ó·ûºÅ delete device connection symbol
+   'åˆ é™¤è®¾å¤‡è¿žæŽ¥ç¬¦å· delete device connection symbol
    dim strLink as UNICODE_STRING
    RtlInitUnicodeString(@strLink,My_LINK_NAME)
    IoDeleteSymbolicLink(@strLink)
 
-   'É¾³ýÉè±¸¶ÔÏó Delete device object
+   'åˆ é™¤è®¾å¤‡å¯¹è±¡ Delete device object
    IoDeleteDevice(DriverObject->DeviceObject) 
 end sub
         
@@ -142,15 +136,15 @@ Private function FBDriver_IoControl(byval DeviceObject as PDEVICE_OBJECT, byval 
    DbgPrint(@!"%ws FBDriver_IoControl \r\n",My_DRIVE_NAME) 
    
    pIrpStack        = IoGetCurrentIrpStackLocation(Irp)
-   uInSize          = pIrpStack->Parameters.DeviceIoControl.InputBufferLength   'ÊäÈë»º³åÇø³¤¶È
-   uOutSize         = pIrpStack->Parameters.DeviceIoControl.OutputBufferLength  'Êä³ö»º³åÇø³¤¶È
-   uIoContrlCode    = GetIoControlCode(Irp)                                     '»ñÈ¡I/O¿ØÖÆ´úÂë
-	Process_Callback = Irp->AssociatedIrp.SystemBuffer                           'È¡µÃI/O»º³åÇøÖ¸Õë
+   uInSize          = pIrpStack->Parameters.DeviceIoControl.InputBufferLength   'è¾“å…¥ç¼“å†²åŒºé•¿åº¦
+   uOutSize         = pIrpStack->Parameters.DeviceIoControl.OutputBufferLength  'è¾“å‡ºç¼“å†²åŒºé•¿åº¦
+   uIoContrlCode    = GetIoControlCode(Irp)                                     'èŽ·å–I/OæŽ§åˆ¶ä»£ç 
+	Process_Callback = Irp->AssociatedIrp.SystemBuffer                           'å–å¾—I/Oç¼“å†²åŒºæŒ‡é’ˆ
 
    select case uIoContrlCode
-      case IOCTL_PROCESS_LOCK_READ                                          'ÏòRING3·µ»ØÓÐÊÂ¼þ·¢ÉúµÄ½ø³ÌÐÅÏ¢
-			if uOutSize = sizeof(My_Process_Callback) then                     'Êä³ö»º³åÇø³¤¶ÈÒª´óÓÚ·µ»Ø½á¹¹´óÐ¡
-            pDevExt                      = g_pDeviceObject->DeviceExtension '´ÓÈ«¾ÖÖ¸Õë»ñÈ¡¾ßÌåÐÅÏ¢	            
+      case IOCTL_PROCESS_LOCK_READ                                          'å‘RING3è¿”å›žæœ‰äº‹ä»¶å‘ç”Ÿçš„è¿›ç¨‹ä¿¡æ¯
+			if uOutSize = sizeof(My_Process_Callback) then                     'è¾“å‡ºç¼“å†²åŒºé•¿åº¦è¦å¤§äºŽè¿”å›žç»“æž„å¤§å°
+            pDevExt                      = g_pDeviceObject->DeviceExtension 'ä»Žå…¨å±€æŒ‡é’ˆèŽ·å–å…·ä½“ä¿¡æ¯	            
 				Process_Callback->hParentId  = pDevExt->hPParentId
 				Process_Callback->hProcessId = pDevExt->hPProcessId
 				Process_Callback->bCreate    = pDevExt->bPCreate
