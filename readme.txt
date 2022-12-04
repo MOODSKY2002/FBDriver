@@ -1,6 +1,11 @@
 此FB代码需要FB1.09版本才能正常编译!!!!
 FB研究QQ群324785043
 
+全GitHub上IOCTL_AFD_GET_SOCK_NAME值都是错的!!!!!
+如果能搜索出来这个结果算你兄弟运气好，找到了正确值!
+#define IOCTL_AFD_GET_PEER_NAME &H00012033 ->Error!!!!
+#define IOCTL_AFD_GET_PEER_NAME &H0001203F ->Pass!!!!
+
 This FB code requires FB1 09 version can be compiled normally!!!!
 
 示例包含：
